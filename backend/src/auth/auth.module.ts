@@ -5,6 +5,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtStrategy } from './strategies/jwt.strategy';
+// import { GoogleStrategy } from './strategies/google.strategy';
+// import { GithubStrategy } from './strategies/github.strategy';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { AdminGuard } from './guards/admin.guard';
 
@@ -23,7 +25,15 @@ import { AdminGuard } from './guards/admin.guard';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy, JwtAuthGuard, AdminGuard],
+  providers: [
+    AuthService, 
+    JwtStrategy, 
+    // Uncomment these after adding OAuth credentials to .env:
+    // GoogleStrategy, 
+    // GithubStrategy, 
+    JwtAuthGuard, 
+    AdminGuard
+  ],
   exports: [AuthService, JwtAuthGuard, AdminGuard],
 })
 export class AuthModule {}

@@ -1,7 +1,9 @@
-import { Controller, Post, Body, Get, Patch, UseGuards, Request, Param, Delete } from '@nestjs/common';
+import { Controller, Post, Body, Get, Patch, UseGuards, Request, Param, Delete, Req, Res } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterDto, LoginDto, OAuthDto } from './dto/auth.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { AuthGuard } from '@nestjs/passport';
+import { Response } from 'express';
 
 @Controller('auth')
 export class AuthController {
@@ -21,6 +23,53 @@ export class AuthController {
   async oauth(@Body() oauthDto: OAuthDto) {
     return this.authService.oauthLogin(oauthDto);
   }
+
+  // OAuth2 routes - Uncomment after adding credentials to .env and enabling strategies in auth.module.ts
+  /*
+  // Google OAuth2
+  @Get('google')
+  @UseGuards(AuthGuard('google'))
+  async googleAuth() {
+    // Guard redirects to Google
+  }
+
+  @Get('google/callback')
+  @UseGuards(AuthGuard('google'))
+  async googleAuthCallback(@Req() req, @Res() res: Response) {
+    const result = await this.authService.oauthLogin({
+      email: req.user.email,
+      name: req.user.firstName + (req.user.lastName ? ' ' + req.user.lastName : ''),
+      provider: 'google',
+      providerId: req.user.providerId,
+    });
+    
+    // Redirect to frontend with token
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    return res.redirect(`${frontendUrl}/auth/callback?token=${result.token}`);
+  }
+
+  // GitHub OAuth2
+  @Get('github')
+  @UseGuards(AuthGuard('github'))
+  async githubAuth() {
+    // Guard redirects to GitHub
+  }
+
+  @Get('github/callback')
+  @UseGuards(AuthGuard('github'))
+  async githubAuthCallback(@Req() req, @Res() res: Response) {
+    const result = await this.authService.oauthLogin({
+      email: req.user.email,
+      name: req.user.firstName + (req.user.lastName ? ' ' + req.user.lastName : ''),
+      provider: 'github',
+      providerId: req.user.providerId,
+    });
+    
+    // Redirect to frontend with token
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    return res.redirect(`${frontendUrl}/auth/callback?token=${result.token}`);
+  }
+  */
 
   @UseGuards(JwtAuthGuard)
   @Get('profile')

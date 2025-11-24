@@ -1,11 +1,11 @@
 # OAuth2 Setup Guide for Jahezmart
 
 ## Overview
-This application now supports OAuth2 authentication with Google and Facebook, in addition to traditional email/password login.
+This application now supports OAuth2 authentication with Google and GitHub, in addition to traditional email/password login.
 
 ## Prerequisites
 - Google Cloud Console account
-- Facebook Developers account
+- GitHub account with developer access
 
 ---
 
@@ -14,7 +14,7 @@ This application now supports OAuth2 authentication with Google and Facebook, in
 ### Step 1: Create Google Cloud Project
 1. Go to [Google Cloud Console](https://console.cloud.google.com/)
 2. Create a new project or select an existing one
-3. Enable the Google+ API
+3. Navigate to **APIs & Services > Credentials**
 
 ### Step 2: Configure OAuth Consent Screen
 1. Navigate to **APIs & Services > OAuth consent screen**
@@ -32,67 +32,57 @@ This application now supports OAuth2 authentication with Google and Facebook, in
 3. Choose **Web application**
 4. Configure:
    - Name: `Jahezmart Web Client`
-   - Authorized JavaScript origins: `http://localhost:3000`
-   - Authorized redirect URIs: `http://localhost:3000/api/auth/callback/google`
+   - Authorized JavaScript origins: 
+     - `http://localhost:3000`
+     - `http://localhost:8000`
+   - Authorized redirect URIs: 
+     - `http://localhost:8000/api/auth/google/callback`
 5. Click **Create**
 6. Copy your **Client ID** and **Client Secret**
 
 ---
 
-## 2. Facebook OAuth Setup
+## 2. GitHub OAuth Setup
 
-### Step 1: Create Facebook App
-1. Go to [Facebook Developers](https://developers.facebook.com/)
-2. Click **My Apps > Create App**
-3. Choose **Consumer** app type
-4. Fill in app details:
-   - App Name: `Jahezmart`
-   - Contact Email: Your email
+### Step 1: Create GitHub OAuth App
+1. Go to [GitHub Developer Settings](https://github.com/settings/developers)
+2. Click **New OAuth App**
+3. Fill in app details:
+   - Application name: `Jahezmart`
+   - Homepage URL: `http://localhost:3000`
+   - Authorization callback URL: `http://localhost:8000/api/auth/github/callback`
+4. Click **Register application**
 
-### Step 2: Add Facebook Login
-1. In your app dashboard, click **Add Product**
-2. Find **Facebook Login** and click **Set Up**
-3. Choose **Web** platform
-4. Enter Site URL: `http://localhost:3000`
-
-### Step 3: Configure OAuth Settings
-1. Go to **Facebook Login > Settings**
-2. Add Valid OAuth Redirect URIs:
-   - `http://localhost:3000/api/auth/callback/facebook`
-3. Save changes
-
-### Step 4: Get Credentials
-1. Go to **Settings > Basic**
-2. Copy your **App ID** (Client ID)
-3. Click **Show** to reveal and copy **App Secret** (Client Secret)
+### Step 2: Get Credentials
+1. After creating, you'll see your **Client ID**
+2. Click **Generate a new client secret**
+3. Copy both **Client ID** and **Client Secret** (secret shown only once!)
 
 ---
 
 ## 3. Environment Configuration
 
-Create `.env.local` file in the frontend root:
+Update `backend/.env` file with your OAuth credentials:
 
 ```env
-# NextAuth Configuration
-NEXTAUTH_URL=http://localhost:3000
-NEXTAUTH_SECRET=your-generated-secret-key-here
+# OAuth2 Configuration
+# Get Google credentials from: https://console.cloud.google.com/apis/credentials
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+GOOGLE_CALLBACK_URL=http://localhost:8000/api/auth/google/callback
 
-# Google OAuth
-GOOGLE_CLIENT_ID=your-google-client-id-here
-GOOGLE_CLIENT_SECRET=your-google-client-secret-here
+# Get GitHub credentials from: https://github.com/settings/developers
+GITHUB_CLIENT_ID=your_github_client_id
+GITHUB_CLIENT_SECRET=your_github_client_secret
+GITHUB_CALLBACK_URL=http://localhost:8000/api/auth/github/callback
 
-# Facebook OAuth
-FACEBOOK_CLIENT_ID=your-facebook-app-id-here
-FACEBOOK_CLIENT_SECRET=your-facebook-app-secret-here
-
-# API Base URL
-NEXT_PUBLIC_API_BASE_URL=http://localhost:8000/api
+# Frontend URL for OAuth redirects
+FRONTEND_URL=http://localhost:3000
 ```
 
-### Generate NEXTAUTH_SECRET
-Run this command to generate a secure secret:
-```bash
-openssl rand -base64 32
+**Frontend**: Optionally set `NEXT_PUBLIC_API_URL` in `.env.local`:
+```env
+NEXT_PUBLIC_API_URL=http://localhost:8000
 ```
 
 ---
@@ -100,17 +90,18 @@ openssl rand -base64 32
 ## 4. Testing OAuth Login
 
 ### Local Development
-1. Start backend: `cd jahezmart-backend && npm run dev`
-2. Start frontend: `cd jahezmart-frontend && npm run dev`
+1. Start backend: `cd backend && npm run start:dev`
+2. Start frontend: `cd frontend && npm run dev`
 3. Navigate to `http://localhost:3000/signin`
-4. Click **Google** or **Facebook** button
-5. Authorize the app
+4. Click **Google** or **GitHub** button
+5. Authorize the app on provider's site
 6. You'll be redirected to `/account` upon success
 
 ### Troubleshooting
-- **Redirect URI mismatch**: Ensure the callback URLs match exactly in your OAuth provider settings
-- **CORS errors**: Backend already has CORS enabled for localhost:3000
-- **Session not persisting**: Check NEXTAUTH_SECRET is set correctly
+- **Redirect URI mismatch**: Ensure callback URLs match exactly in provider settings
+- **Invalid credentials**: Double-check Client ID and Secret in `.env`
+- **Token not found**: Check browser console and backend logs
+- **CORS errors**: Backend CORS is configured for localhost:3000
 
 ---
 
@@ -118,54 +109,73 @@ openssl rand -base64 32
 
 ### Update OAuth Provider Settings
 1. **Google**: Add production domain to authorized origins and redirect URIs
-   - Origin: `https://yourdomain.com`
-   - Redirect: `https://yourdomain.com/api/auth/callback/google`
+   - Origin: `https://api.yourdomain.com`
+   - Redirect: `https://api.yourdomain.com/api/auth/google/callback`
 
-2. **Facebook**: Add production domain to App Domains and Valid OAuth Redirect URIs
-   - Domain: `yourdomain.com`
-   - Redirect: `https://yourdomain.com/api/auth/callback/facebook`
+2. **GitHub**: Add production URLs
+   - Homepage: `https://yourdomain.com`
+   - Callback: `https://api.yourdomain.com/api/auth/github/callback`
 
 ### Update Environment Variables
 ```env
-NEXTAUTH_URL=https://yourdomain.com
-# Keep other variables, update if needed
+FRONTEND_URL=https://yourdomain.com
+GOOGLE_CALLBACK_URL=https://api.yourdomain.com/api/auth/google/callback
+GITHUB_CALLBACK_URL=https://api.yourdomain.com/api/auth/github/callback
+```
+
+Frontend:
+```env
+NEXT_PUBLIC_API_URL=https://api.yourdomain.com
 ```
 
 ---
 
-## 6. Features
+## 6. OAuth Flow Architecture
+
+```
+User clicks "Sign in with Google/GitHub"
+         ↓
+Frontend redirects to: http://localhost:8000/api/auth/{provider}
+         ↓
+Backend redirects to OAuth provider (Google/GitHub)
+         ↓
+User authorizes on provider's site
+         ↓
+Provider redirects to: http://localhost:8000/api/auth/{provider}/callback
+         ↓
+Backend validates, creates/finds user, generates JWT
+         ↓
+Backend redirects to: http://localhost:3000/auth/callback?token={jwt}
+         ↓
+Frontend extracts token, stores in Redux, redirects to /account
+```
+
+---
+
+## 7. Features
 
 ### What Works
 ✅ Sign in with Google  
-✅ Sign in with Facebook  
+✅ Sign in with GitHub  
 ✅ Traditional email/password login  
 ✅ User registration  
 ✅ Automatic account creation for OAuth users  
 ✅ JWT token generation and storage  
-✅ Session persistence across page refreshes  
-✅ Secure backend integration  
+✅ Session persistence via Redux  
+✅ Cart/wishlist/order history sync  
 
 ### Security Features
-- JWT tokens with 7-day expiration
+- JWT tokens with configurable expiration
+- Passport.js strategy validation
 - CORS protection
-- Secure password hashing for OAuth users
-- Session management with NextAuth
-
----
-
-## 7. How It Works
-
-1. **User clicks OAuth button** → NextAuth initiates OAuth flow
-2. **User authorizes** → Provider redirects back with auth code
-3. **NextAuth exchanges code for tokens** → Gets user profile
-4. **Backend creates/finds user** → `/api/auth/oauth` endpoint
-5. **JWT token issued** → Stored in NextAuth session and localStorage
-6. **User redirected to /account** → Authenticated session active
+- Secure OAuth flow with state validation
+- Backend-only credential storage
 
 ---
 
 ## Support
 For issues or questions, check:
-- [NextAuth Documentation](https://next-auth.js.org/)
+- [Passport.js Google OAuth2](http://www.passportjs.org/packages/passport-google-oauth20/)
+- [Passport.js GitHub OAuth2](http://www.passportjs.org/packages/passport-github2/)
 - [Google OAuth Docs](https://developers.google.com/identity/protocols/oauth2)
-- [Facebook Login Docs](https://developers.facebook.com/docs/facebook-login/)
+- [GitHub OAuth Docs](https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps)

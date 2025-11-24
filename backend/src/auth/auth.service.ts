@@ -289,6 +289,39 @@ export class AuthService {
     return { message: 'Removed' };
   }
 
+  async clearCart(userId: string) {
+    await this.prisma.cartItem.deleteMany({ where: { userId } });
+    return { message: 'Cart cleared' };
+  }
+
+  async createOrder(userId: string, orderData: any) {
+    // Generate unique order number
+    const orderNumber = `ORD-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+
+    const order = await this.prisma.order.create({
+      data: {
+        userId,
+        orderNumber,
+        total: orderData.total,
+        status: 'processing',
+        items: {
+          create: orderData.items.map((item) => ({
+            productId: item.productId,
+            name: item.name,
+            price: item.price,
+            quantity: item.quantity,
+            image: item.image,
+          })),
+        },
+      },
+      include: {
+        items: true,
+      },
+    });
+
+    return order;
+  }
+
   // Wishlist methods
   async getWishlist(userId: string) {
     const items = await this.prisma.wishlistItem.findMany({ where: { userId } });

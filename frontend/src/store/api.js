@@ -233,6 +233,18 @@ export const api = createApi({
       }),
       invalidatesTags: ["Wishlist"],
     }),
+
+    // Payment endpoints
+    createCheckoutSession: builder.mutation({
+      query: (checkoutData) => ({
+        url: "/payment/create-checkout-session",
+        method: "POST",
+        body: checkoutData,
+      }),
+    }),
+    getSessionDetails: builder.query({
+      query: (sessionId) => `/payment/session-details?session_id=${sessionId}`,
+    }),
   }),
 });
 
@@ -263,4 +275,6 @@ export const {
   useGetWishlistQuery,
   useAddToWishlistMutation,
   useRemoveWishlistItemMutation,
+  useCreateCheckoutSessionMutation,
+  useGetSessionDetailsQuery,
 } = api;

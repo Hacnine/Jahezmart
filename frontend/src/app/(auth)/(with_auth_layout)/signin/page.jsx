@@ -7,7 +7,6 @@ import { useLoginMutation } from "../../../../store/api";
 import { useRouter } from "next/navigation";
 import { useDispatch } from "react-redux";
 import { setCredentials } from "../../../../store/slices/authSlice";
-import { signIn } from "next-auth/react";
 
 const SignIn = () => {
   const router = useRouter();
@@ -51,19 +50,10 @@ const SignIn = () => {
     }
   };
 
-  const handleOAuthSignIn = async (provider) => {
-    try {
-      const result = await signIn(provider, {
-        callbackUrl: "/account",
-        redirect: true,
-      });
-      
-      if (result?.error) {
-        console.error("OAuth sign in failed:", result.error);
-      }
-    } catch (error) {
-      console.error("OAuth error:", error);
-    }
+  const handleOAuthSignIn = (provider) => {
+    // Redirect to backend OAuth endpoint
+    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+    window.location.href = `${backendUrl}/api/auth/${provider}`;
   };
 
   return (
@@ -161,10 +151,10 @@ const SignIn = () => {
       <div className="flex  gap-4">
         <button
           type="button"
-          onClick={() => handleOAuthSignIn("facebook")}
-          className="w-1/2 py-2 text-center text-white bg-blue-800 rounded-md uppercase font-roboto font-medium text-sm hover:bg-blue-700"
+          onClick={() => handleOAuthSignIn("github")}
+          className="w-1/2 py-2 text-center text-white bg-gray-800 rounded-md uppercase font-roboto font-medium text-sm hover:bg-gray-700"
         >
-          Facebook
+          GitHub
         </button>
 
         <button

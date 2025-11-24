@@ -9,12 +9,38 @@ import {
 } from "@mui/icons-material";
 import { usePathname, useRouter } from "next/navigation";
 import React from "react";
+import { useDispatch } from "react-redux";
+import { logout as logoutAction } from "../../../store/slices/authSlice";
+import { clearCart } from "../../../store/slices/cartSlice";
+import { signOut, useSession } from "next-auth/react";
 import { MdAccountTree } from "react-icons/md";
 import { accountSidebar } from "../../../constant";
 
 const AccountSideBar = () => {
   const link = usePathname();
   const router = useRouter();
+  const dispatch = useDispatch();
+  const { data: session } = useSession();
+
+  const handleLogout = async () => {
+    try {
+      // If signed in via next-auth, sign out there too
+      if (session) {
+        await signOut({ redirect: false });
+      }
+
+      // Clear client-side auth and cart state
+      dispatch(logoutAction());
+      dispatch(clearCart());
+
+      // Redirect to signin page
+      router.replace("/signin");
+    } catch (err) {
+      console.error("Logout failed", err);
+      // fallback redirect
+      router.replace("/signin");
+    }
+  };
 
   return (
     <div className="text-base font-sans md:px-0 px-6">
@@ -143,9 +169,7 @@ const AccountSideBar = () => {
             className={`${
               link === "/account/signin" ? "text-orangeRed" : "text-gray-600  "
             } hover:text-orangeRed space-y-1  mt-3 p-2  rounded-md shadow-md shadow-gray-300 start  w-full hover:scale-105 transition-transform duration-500`}
-            onClick={() => {
-              router.replace("/signin");
-            }}
+            onClick={handleLogout}
           >
             <span className=" mr-2 text-base">
               <Logout />

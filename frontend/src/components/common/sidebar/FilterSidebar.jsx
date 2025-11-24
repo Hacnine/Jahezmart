@@ -43,7 +43,9 @@ const ShopSidebar = () => {
   };
 
   const uniqueColors = Array.from(
-    new Set(allProducts.flatMap((product) => Object.keys(product.images)))
+    new Set(allProducts.flatMap((product) => 
+      product.images ? Object.keys(product.images) : []
+    ))
   );
 
   const newCategory = getCategoryAndProductQuantity("category");
