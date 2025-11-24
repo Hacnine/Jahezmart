@@ -262,6 +262,19 @@ export class AuthService {
   }
 
   async addToCart(userId: string, itemData: any) {
+    // Validate image URL
+    const validateUrl = (url: string) => {
+      try {
+        new URL(url);
+        return url;
+      } catch {
+        return null;
+      }
+    };
+
+    const imageUrl = itemData.image ? validateUrl(itemData.image) :
+                   itemData.firstImagePath ? validateUrl(itemData.firstImagePath) : null;
+
     const item = await this.prisma.cartItem.create({
       data: {
         userId,
@@ -269,7 +282,7 @@ export class AuthService {
         name: itemData.name,
         price: itemData.price,
         quantity: itemData.quantity || 1,
-        image: itemData.image || itemData.firstImagePath || null,
+        image: imageUrl,
       },
     });
     return item;
@@ -298,6 +311,16 @@ export class AuthService {
     // Generate unique order number
     const orderNumber = `ORD-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
 
+    // Validate image URL
+    const validateUrl = (url: string) => {
+      try {
+        new URL(url);
+        return url;
+      } catch {
+        return null;
+      }
+    };
+
     const order = await this.prisma.order.create({
       data: {
         userId,
@@ -310,7 +333,7 @@ export class AuthService {
             name: item.name,
             price: item.price,
             quantity: item.quantity,
-            image: item.image,
+            image: item.image ? validateUrl(item.image) : null,
           })),
         },
       },
@@ -333,13 +356,27 @@ export class AuthService {
     const productId = itemData.productId || itemData.id;
     const existing = await this.prisma.wishlistItem.findFirst({ where: { userId, productId } });
     if (existing) return existing;
+
+    // Validate image URL
+    const validateUrl = (url: string) => {
+      try {
+        new URL(url);
+        return url;
+      } catch {
+        return null;
+      }
+    };
+
+    const imageUrl = itemData.image ? validateUrl(itemData.image) :
+                   itemData.firstImagePath ? validateUrl(itemData.firstImagePath) : null;
+
     const item = await this.prisma.wishlistItem.create({
       data: {
         userId,
         productId,
         name: itemData.name,
         price: itemData.price,
-        image: itemData.image || itemData.firstImagePath || null,
+        image: imageUrl,
       },
     });
     return item;

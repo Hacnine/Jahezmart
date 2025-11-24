@@ -83,8 +83,14 @@ model Product {
   description String?
   price       Float
   image       String?
+  images      Json?
+  colors      String[]
   category    String?
+  brand       String?
   stock       Int      @default(0)
+  rating      Float?
+  reviews     Int?
+  discount    Int?
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

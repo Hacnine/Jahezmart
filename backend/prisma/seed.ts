@@ -35,8 +35,14 @@ async function main() {
       description: descriptionText || null,
       price: p.price != null ? Number(p.price) : 0,
       image: firstImage,
+      images: p.images || null,
+      colors: p.colors || [],
       category: p.category ?? null,
+      brand: p.brand ?? null,
       stock: p.stock != null ? Number(p.stock) : 0,
+      rating: p.rating != null ? Number(p.rating) : null,
+      reviews: p.reviews != null ? Number(p.reviews) : null,
+      discount: p.discount != null ? Number(p.discount) : null,
       isActive: p.isActive != null ? !!p.isActive : true,
     };
 

@@ -18,6 +18,15 @@ export class PaymentService {
     this.stripe = new Stripe(stripeSecretKey);
   }
 
+  private isValidUrl(url: string): boolean {
+    try {
+      new URL(url);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
   async createCheckoutSession(
     userId: string,
     items: Array<{
@@ -35,17 +44,22 @@ export class PaymentService {
       const user = await this.authService.getProfile(userId);
 
       // Create line items for Stripe
-      const lineItems = items.map((item) => ({
-        price_data: {
-          currency: 'usd',
-          product_data: {
-            name: item.name,
-            images: item.image ? [item.image] : [],
+      const lineItems = items.map((item) => {
+        // Filter out invalid image URLs
+        const validImages = item.image && this.isValidUrl(item.image) ? [item.image] : [];
+
+        return {
+          price_data: {
+            currency: 'usd',
+            product_data: {
+              name: item.name,
+              images: validImages,
+            },
+            unit_amount: Math.round(item.price * 100), // Convert to cents
           },
-          unit_amount: Math.round(item.price * 100), // Convert to cents
-        },
-        quantity: item.quantity,
-      }));
+          quantity: item.quantity,
+        };
+      });
 
       // Create checkout session
       const session = await this.stripe.checkout.sessions.create({

@@ -34,15 +34,15 @@ const ProductCard = ({
   const router = useRouter();
 
   const [modalOpen, setModalOpen] = useState(false);
-  const [selected, setSelected] = useState(colors[0]);
+  const [selected, setSelected] = useState(colors && colors.length > 0 ? colors[0] : null);
   const [open, setOpen] = React.useState(false);
   const [openWishList, setOpenWishList] = React.useState(false);
   const [message, setMessage] = useState("Added to cart!");
   const [wishListMessage, setWishListMessage] = useState("Added to WishList!");
   const [favorite, setFavorite] = useState(false);
   const [index, setIndex] = useState(0);
-  const firstColorKey = Object.keys(images)[index];
-  const firstImagePath = images[firstColorKey]?.[0];
+  const firstColorKey = images && Object.keys(images).length > 0 ? Object.keys(images)[index] : null;
+  const firstImagePath = firstColorKey && images[firstColorKey] && images[firstColorKey][0] ? images[firstColorKey][0] : "/images/placeholder.png";
 
   const handleFavoriteClick = () => {
     const existingProduct = wishListProducts.find((item) => item.id === id);
@@ -89,7 +89,7 @@ const ProductCard = ({
       <div className="w-full  h-fit relative  group ">
         <div className="">
           <div className="center relative  group ">
-            <img src={firstImagePath} alt="" className=" w-[70%] p-3" />
+            <img src={firstImagePath || "/images/placeholder.png"} alt="" className=" w-[70%] p-3" />
           </div>
         </div>
         <div
@@ -128,7 +128,7 @@ const ProductCard = ({
 
       <div className="  md:space-y-2 mt-4">
         <div className="start gap-2 px-3">
-          {colors.map((currentColor, index) => {
+          {colors && colors.length > 0 && colors.map((currentColor, index) => {
             return (
               <div key={index}>
                 <ColorButton
